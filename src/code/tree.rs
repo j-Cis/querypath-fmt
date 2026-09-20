@@ -15,35 +15,36 @@ pub enum TreeItem {
     Node {
         label: String,
         is_dir: bool,
+        is_binary: bool,
         path: String,
         children: Vec<TreeItem>,
     },
-    /// Odstęp wizualny kontynuujący kreski pionowe nadrzędnych gałęzi `│`
     Spacer,
+}
+
+pub struct TreeRow {
+    pub tree_line: String,
+    pub path: String,
+    pub is_dir: bool,
+    pub is_binary: bool,
+    pub is_first_line: bool,
 }
 
 pub struct Tree {
     pub root_items: Vec<TreeItem>,
-    pub column_width: usize,
-    pub max_name_len: Option<usize>,
+    pub name_width: usize,
 }
 
 impl Tree {
     pub fn new() -> Self {
         Self {
             root_items: Vec::new(),
-            column_width: 35,
-            max_name_len: None,
+            name_width: 20,
         }
     }
 
-    pub fn column_width(mut self, width: usize) -> Self {
-        self.column_width = width;
-        self
-    }
-
-    pub fn max_name_len(mut self, max_len: usize) -> Self {
-        self.max_name_len = Some(max_len);
+    pub fn name_width(mut self, width: usize) -> Self {
+        self.name_width = width.max(20);
         self
     }
 
@@ -51,55 +52,107 @@ impl Tree {
         self.root_items.push(item);
     }
 
-    pub fn render(&self) -> String {
-        let mut output = String::new();
+    pub fn calculate_max_prefix_len(&self) -> usize {
+        let mut max_len = 0;
+        for item in &self.root_items {
+            self.walk_prefix_len(item, "", &mut max_len);
+        }
+        max_len
+    }
+
+    fn walk_prefix_len(&self, item: &TreeItem, prefix: &str, max_len: &mut usize) {
+        match item {
+            TreeItem::Spacer => {
+                *max_len = (*max_len).max(prefix.chars().count());
+            }
+            TreeItem::Root { children, .. } => {
+                *max_len = (*max_len).max(3); // "▣─┬"
+                for child in children {
+                    self.walk_prefix_len(child, "  ", max_len);
+                }
+            }
+            TreeItem::Node { children, .. } => {
+                let symbol_len = 4; // np. "├──┬"
+                let line_prefix_len = prefix.chars().count() + symbol_len;
+                *max_len = (*max_len).max(line_prefix_len);
+
+                let child_prefix = format!("{}{}", prefix, TREE_SYMBOLS[7]);
+                for child in children {
+                    self.walk_prefix_len(child, &child_prefix, max_len);
+                }
+            }
+        }
+    }
+
+    pub fn render_rows(&self) -> Vec<TreeRow> {
+        let effective_name_width = self.name_width.max(20);
+        let max_prefix_len = self.calculate_max_prefix_len();
+        let total_col_width = max_prefix_len + 1 + effective_name_width;
+
+        let mut rows = Vec::new();
         let total = self.root_items.len();
 
         for (i, item) in self.root_items.iter().enumerate() {
             let is_last = i == total - 1;
-            self.render_item(item, "", is_last, &mut output);
+            self.render_item(item, "", is_last, effective_name_width, total_col_width, &mut rows);
         }
 
-        output
+        rows
     }
 
-    fn render_item(&self, item: &TreeItem, prefix: &str, is_last: bool, out: &mut String) {
+    fn render_item(
+        &self,
+        item: &TreeItem,
+        prefix: &str,
+        is_last: bool,
+        name_width: usize,
+        total_col_width: usize,
+        out: &mut Vec<TreeRow>,
+    ) {
         match item {
             TreeItem::Spacer => {
-                out.push_str(prefix);
-                out.push('\n');
+                let line = format!("{:width$}", prefix, width = total_col_width);
+                out.push(TreeRow {
+                    tree_line: line,
+                    path: String::new(),
+                    is_dir: false,
+                    is_binary: false,
+                    is_first_line: true,
+                });
             }
             TreeItem::Root { label, path, children } => {
                 let has_children = !children.is_empty();
                 let symbol = if has_children { TREE_SYMBOLS[15] } else { TREE_SYMBOLS[16] };
-                
-                // Dla zachowania pionowej kreski under `┬` przy przełamywaniu linii
-                let cont_symbol = if has_children { "  │" } else { TREE_SYMBOLS[3] };
 
-                let (name_chunks, path_chunks) = self.split_chunks(label, path);
-                let max_lines = name_chunks.len().max(path_chunks.len());
+                let line_prefix = format!("{}{}", prefix, symbol);
+                let cont_prefix: String = line_prefix
+                    .chars()
+                    .map(|c| if matches!(c, '│' | '├' | '┬' | '┌') { '│' } else { ' ' })
+                    .collect();
 
-                for i in 0..max_lines {
-                    let pfx = if i == 0 { symbol } else { cont_symbol };
-                    let nm = name_chunks.get(i).map(|s| s.as_str()).unwrap_or("");
-                    let pth = path_chunks.get(i).map(|s| s.as_str()).unwrap_or("");
+                let name_chunks = self.chunk_str(label, name_width);
 
-                    let left_str = format!("{} {}", pfx, nm);
-                    let left_len = left_str.chars().count();
+                for (i, chunk) in name_chunks.iter().enumerate() {
+                    let pfx = if i == 0 { &line_prefix } else { &cont_prefix };
+                    let left_str = format!("{} {}", pfx, chunk);
+                    let line = format!("{:width$}", left_str, width = total_col_width);
 
-                    let padding_len = self.column_width.saturating_sub(left_len);
-                    let padding = " ".repeat(padding_len);
-
-                    out.push_str(&format!("{}{}{}\n", left_str, padding, pth));
+                    out.push(TreeRow {
+                        tree_line: line,
+                        path: if i == 0 { path.clone() } else { String::new() },
+                        is_dir: true,
+                        is_binary: false,
+                        is_first_line: i == 0,
+                    });
                 }
 
                 let child_total = children.len();
                 for (i, child) in children.iter().enumerate() {
                     let child_is_last = i == child_total - 1;
-                    self.render_item(child, "  ", child_is_last, out);
+                    self.render_item(child, "  ", child_is_last, name_width, total_col_width, out);
                 }
             }
-            TreeItem::Node { label, is_dir, path, children } => {
+            TreeItem::Node { label, is_dir, is_binary, path, children } => {
                 let has_children = !children.is_empty();
 
                 let symbol = match (*is_dir, has_children, is_last) {
@@ -112,65 +165,40 @@ impl Tree {
                 };
 
                 let line_prefix = format!("{}{}", prefix, symbol);
-
-                // Przekształca `│` oraz `┬` na pionowe łączniki `│` na liniach kontynuacji
                 let cont_prefix: String = line_prefix
                     .chars()
-                    .map(|c| if c == '│' || c == '┬' { '│' } else { ' ' })
+                    .map(|c| if matches!(c, '│' | '├' | '┬' | '┌') { '│' } else { ' ' })
                     .collect();
 
-                let (name_chunks, path_chunks) = self.split_chunks(label, path);
-                let max_lines = name_chunks.len().max(path_chunks.len());
+                let name_chunks = self.chunk_str(label, name_width);
 
-                for i in 0..max_lines {
+                for (i, chunk) in name_chunks.iter().enumerate() {
                     let pfx = if i == 0 { &line_prefix } else { &cont_prefix };
-                    let nm = name_chunks.get(i).map(|s| s.as_str()).unwrap_or("");
-                    let pth = path_chunks.get(i).map(|s| s.as_str()).unwrap_or("");
+                    let left_str = format!("{} {}", pfx, chunk);
+                    let line = format!("{:width$}", left_str, width = total_col_width);
 
-                    let left_str = format!("{} {}", pfx, nm);
-                    let left_len = left_str.chars().count();
-
-                    let padding_len = self.column_width.saturating_sub(left_len);
-                    let padding = " ".repeat(padding_len);
-
-                    out.push_str(&format!("{}{}{}\n", left_str, padding, pth));
+                    out.push(TreeRow {
+                        tree_line: line,
+                        path: if i == 0 { path.clone() } else { String::new() },
+                        is_dir: *is_dir,
+                        is_binary: *is_binary,
+                        is_first_line: i == 0,
+                    });
                 }
 
                 let child_prefix = if is_last {
-                    format!("{}{}", prefix, TREE_SYMBOLS[3]) // "   "
+                    format!("{}{}", prefix, TREE_SYMBOLS[3])
                 } else {
-                    format!("{}{}", prefix, TREE_SYMBOLS[7]) // "│  "
+                    format!("{}{}", prefix, TREE_SYMBOLS[7])
                 };
 
                 let child_total = children.len();
                 for (i, child) in children.iter().enumerate() {
                     let child_is_last = i == child_total - 1;
-                    self.render_item(child, &child_prefix, child_is_last, out);
+                    self.render_item(child, &child_prefix, child_is_last, name_width, total_col_width, out);
                 }
             }
         }
-    }
-
-    fn split_chunks(&self, name: &str, full_path: &str) -> (Vec<String>, Vec<String>) {
-        let max_len = match self.max_name_len {
-            Some(limit) if limit > 0 => limit,
-            _ => return (vec![name.to_string()], vec![full_path.to_string()]),
-        };
-
-        let name_chunks = self.chunk_str(name, max_len);
-
-        let path_chunks = if !full_path.is_empty() && !full_path.ends_with('/') && full_path.ends_with(name) {
-            let dir_part = &full_path[..full_path.len() - name.len()];
-            let mut chunks = vec![format!("{}{}", dir_part, name_chunks[0])];
-            for nc in name_chunks.iter().skip(1) {
-                chunks.push(nc.clone());
-            }
-            chunks
-        } else {
-            self.chunk_str(full_path, max_len)
-        };
-
-        (name_chunks, path_chunks)
     }
 
     fn chunk_str(&self, s: &str, limit: usize) -> Vec<String> {

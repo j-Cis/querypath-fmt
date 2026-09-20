@@ -1,6 +1,6 @@
 use anyhow::Result;
 use querypath::QueryPath;
-use querypath_fmt::PathsTree;
+use querypath_fmt::{Numeration, QueryPathFmt};
 
 fn main() -> Result<()> {
     let res: querypath::QueryResults = QueryPath::new()
@@ -30,12 +30,19 @@ fn main() -> Result<()> {
 
     println!("\n// a następnie użyjemy naszego querypath_fmt do:");
 
-    let tree = PathsTree::new()
-        .column_width(45)
-        .max_name_len(24)
-        .format_results(&res);
+    let fmt = QueryPathFmt::new()
+        .name_width(25)
+        .path_width(45)
+        .numeration(
+            Numeration::new()
+                .enabled(true)
+                .numerate_dirs(false)
+                .numerate_binaries(false)
+                .start_from(1),
+        );
 
-    print!("{}", tree);
+    let output = fmt.format(&res);
+    println!("{}", output);
 
     Ok(())
 }
