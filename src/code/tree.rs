@@ -28,6 +28,12 @@ pub enum TreeItem {
     Spacer,
 }
 
+impl Default for Tree {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct Tree {
     pub name_width: usize,
 }
@@ -69,6 +75,25 @@ impl Tree {
                     self.walk_prefix_len(child, &child_prefix, max_len);
                 }
             }
+        }
+    }
+}
+
+// Akcesory używane przez silnik sortujący
+impl TreeItem {
+    pub fn is_dir(&self) -> bool {
+        match self {
+            TreeItem::Root { .. } => true,
+            TreeItem::Node { is_dir, .. } => *is_dir,
+            TreeItem::Spacer => false,
+        }
+    }
+
+    pub fn label(&self) -> &str {
+        match self {
+            TreeItem::Root { label, .. } => label,
+            TreeItem::Node { label, .. } => label,
+            TreeItem::Spacer => "",
         }
     }
 }

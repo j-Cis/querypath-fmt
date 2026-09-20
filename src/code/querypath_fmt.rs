@@ -3,9 +3,10 @@ use querypath::QueryResults;
 use crate::fmt_node::InternalNode;
 use crate::fmt_render::FmtRender;
 use crate::numeration::Numeration;
+use crate::sort::Sorting;
 use crate::stats_temporal::StatsTemporal;
 use crate::stats_weight::StatsWeight;
-use crate::tree::Tree;
+use crate::tree::{Tree, TreeItem};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Column {
@@ -22,6 +23,13 @@ pub struct QueryPathFmt {
     numeration: Numeration,
     stats_weight: StatsWeight,
     stats_temporal: StatsTemporal,
+    sorting: Sorting,
+}
+
+impl Default for QueryPathFmt {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl QueryPathFmt {
@@ -34,6 +42,7 @@ impl QueryPathFmt {
             numeration: Numeration::default(),
             stats_weight: StatsWeight::default(),
             stats_temporal: StatsTemporal::default(),
+            sorting: Sorting::default(),
         }
     }
 
@@ -72,8 +81,17 @@ impl QueryPathFmt {
         self
     }
 
+    pub fn sorting(mut self, sorting: Sorting) -> Self {
+        self.sorting = sorting;
+        self
+    }
+
     pub fn format(&self, res: &QueryResults) -> String {
-        let root_node = InternalNode::build_root(res);
+        let mut root_node = InternalNode::build_root(res);
+
+        if let TreeItem::Root { ref mut children, .. } = root_node {
+            self.sorting.sort_items(children);
+        }
 
         let tree = Tree::new().name_width(self.name_width);
         let max_prefix_len = tree.calculate_max_prefix_len_for_item(&root_node);

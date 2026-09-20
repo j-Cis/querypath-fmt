@@ -1,6 +1,11 @@
+// ./examples/tree_view.rs
 use anyhow::Result;
 use querypath::QueryPath;
-use querypath_fmt::{Column, DirWeightDisplay, Numeration, QueryPathFmt, StatsTemporal, StatsWeight, UnitSystem, WeightPrecision};
+use querypath_fmt::{
+    CasePrecedence, CharClass, Column, DirWeightDisplay, GroupStrategy, NoExtPriority, NodeGroup,
+    Numeration, QueryPathFmt, SameNamePriority, Sorting, StatsTemporal, StatsWeight, UnitSystem,
+    WeightPrecision,
+};
 
 fn main() -> Result<()> {
     let res: querypath::QueryResults = QueryPath::new()
@@ -25,7 +30,10 @@ fn main() -> Result<()> {
 
     println!("\n✨ Dopasowane pliki ({}):", res.files.len());
     for f in &res.files {
-        println!(" 📄 {} (rozmiar: {} B, binarny: {}, mod: {:?})", f.path, f.size, f.is_binary, f.modified_at);
+        println!(
+            " 📄 {} (rozmiar: {} B, binarny: {}, mod: {:?})",
+            f.path, f.size, f.is_binary, f.modified_at
+        );
     }
 
     println!("\n// a następnie użyjemy naszego querypath_fmt do:");
@@ -33,13 +41,12 @@ fn main() -> Result<()> {
     let fmt = QueryPathFmt::new()
         .name_width(25)
         .path_width(35)
-		.column_order_left([
-		])
-		.column_order_right([
-			Column::Weight,  
-			Column::Temporal,
-			Column::Path,
-		])
+        .column_order_left([])
+        .column_order_right([
+            Column::Weight,
+            Column::Temporal,
+            Column::Path,
+        ])
         .numeration(
             Numeration::new()
                 .enabled(true)
@@ -47,7 +54,7 @@ fn main() -> Result<()> {
                 .numerate_binaries(false)
                 .start_from(1),
         )
-		.stats_weight(
+        .stats_weight(
             StatsWeight::new()
                 .enabled(true)
                 .unit_system(UnitSystem::Binary)
@@ -58,6 +65,20 @@ fn main() -> Result<()> {
             StatsTemporal::new()
                 .enabled(true)
                 .pattern("YYYY-MM-MD AAA Q"),
+        )
+        .sorting(
+            Sorting::new()
+                .enabled(true)
+                .group_strategy(GroupStrategy::Custom(vec![
+                    NodeGroup::TextFile,
+                    NodeGroup::Directory,
+                    NodeGroup::BinaryFile,
+                ]))
+                .same_name_priority(SameNamePriority::FileFirst)
+                .no_ext_priority(NoExtPriority::Above)
+                .ignore_leading_dot(true)
+                .char_class_order([CharClass::Special, CharClass::Digit, CharClass::Letter])
+                .case_precedence(CasePrecedence::Insensitive),
         );
 
     let output = fmt.format(&res);

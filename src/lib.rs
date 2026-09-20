@@ -28,6 +28,12 @@ pub mod fmt_node;
 #[path = "code/fmt_render.rs"]
 pub mod fmt_render;
 
+#[path = "code/sort.rs"]
+pub mod sort;
+pub use sort::{
+    CasePrecedence, CharClass, GroupStrategy, NoExtPriority, NodeGroup, SameNamePriority, Sorting,
+};
+
 #[path = "code/querypath_fmt.rs"]
 pub mod querypathfmt;
 pub use querypathfmt::{Column, QueryPathFmt};
