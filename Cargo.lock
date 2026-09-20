@@ -40,6 +40,7 @@ version = "1.0.0-dev.2"
 dependencies = [
  "anyhow",
  "querypath",
+ "temporal-fmt",
 ]
 
 [[package]]
@@ -79,6 +80,12 @@ checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
 ]
+
+[[package]]
+name = "temporal-fmt"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3417c826ab8fafa086dd4c838ee1b77257bdb3251a95b6f7f9ca3bbac9f30322"
 
 [[package]]
 name = "walkdir"

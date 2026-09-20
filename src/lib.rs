@@ -14,10 +14,6 @@ pub use numeration::Numeration;
 pub mod stats_weight;
 pub use stats_weight::{DirWeightDisplay, StatsWeight, UnitSystem, WeightPrecision};
 
-#[path = "code/temporal.rs"]
-pub mod temporal;
-pub use temporal::Temporal;
-
 #[path = "code/stats_temporal.rs"]
 pub mod stats_temporal;
 pub use stats_temporal::StatsTemporal;

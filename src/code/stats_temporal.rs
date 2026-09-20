@@ -1,4 +1,4 @@
-use crate::temporal::Temporal;
+use temporal_fmt::Temporal;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StatsTemporal {
