@@ -1,6 +1,8 @@
 #[path = "code/tree.rs"]
 pub mod tree;
-pub use tree::{Tree, TreeItem, TREE_SYMBOLS};
+pub use tree::{
+	COL_NAME_SIZE_DEFAULT, COL_NAME_SIZE_MIN, COL_PATH_SIZE_DEFAULT, COL_PATH_SIZE_MIN, TREE_SYMBOLS, Tree, TreeItem,
+};
 
 #[path = "code/paths_tree.rs"]
 pub mod paths_tree;
@@ -26,9 +28,7 @@ pub mod fmt_render;
 
 #[path = "code/sort.rs"]
 pub mod sort;
-pub use sort::{
-    CasePrecedence, CharClass, GroupStrategy, NoExtPriority, NodeGroup, SameNamePriority, Sorting,
-};
+pub use sort::{CasePrecedence, CharClass, GroupStrategy, NoExtPriority, NodeGroup, SameNamePriority, Sorting};
 
 #[path = "code/querypath_fmt.rs"]
 pub mod querypathfmt;

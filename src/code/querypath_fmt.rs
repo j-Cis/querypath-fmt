@@ -6,106 +6,106 @@ use crate::numeration::Numeration;
 use crate::sort::Sorting;
 use crate::stats_temporal::StatsTemporal;
 use crate::stats_weight::StatsWeight;
-use crate::tree::{Tree, TreeItem};
+use crate::tree::{COL_NAME_SIZE_DEFAULT, COL_NAME_SIZE_MIN, COL_PATH_SIZE_DEFAULT, COL_PATH_SIZE_MIN, Tree, TreeItem};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Column {
-    Weight,
-    Temporal,
-    Path,
+	Weight,
+	Temporal,
+	Path,
 }
 
 pub struct QueryPathFmt {
-    name_width: usize,
-    path_width: usize,
-    left_columns: Vec<Column>,
-    right_columns: Vec<Column>,
-    numeration: Numeration,
-    stats_weight: StatsWeight,
-    stats_temporal: StatsTemporal,
-    sorting: Sorting,
+	name_width: usize,
+	path_width: usize,
+	left_columns: Vec<Column>,
+	right_columns: Vec<Column>,
+	numeration: Numeration,
+	stats_weight: StatsWeight,
+	stats_temporal: StatsTemporal,
+	sorting: Sorting,
 }
 
 impl Default for QueryPathFmt {
-    fn default() -> Self {
-        Self::new()
-    }
+	fn default() -> Self {
+		Self::new()
+	}
 }
 
 impl QueryPathFmt {
-    pub fn new() -> Self {
-        Self {
-			name_width: 25, // <-- Domyślnie 25
-            path_width: 35, // <-- Domyślnie 35
-            left_columns: vec![Column::Weight, Column::Temporal],
-            right_columns: vec![Column::Path],
-            numeration: Numeration::default(),
-            stats_weight: StatsWeight::default(),
-            stats_temporal: StatsTemporal::default(),
-            sorting: Sorting::default(),
-        }
-    }
+	pub fn new() -> Self {
+		Self {
+			name_width: COL_NAME_SIZE_DEFAULT,
+			path_width: COL_PATH_SIZE_DEFAULT,
+			left_columns: vec![Column::Weight, Column::Temporal],
+			right_columns: vec![Column::Path],
+			numeration: Numeration::default(),
+			stats_weight: StatsWeight::default(),
+			stats_temporal: StatsTemporal::default(),
+			sorting: Sorting::default(),
+		}
+	}
 
-    pub fn name_width(mut self, width: usize) -> Self {
-        self.name_width = width.max(15); // <-- Minimum 15
-        self
-    }
+	pub fn name_width(mut self, width: usize) -> Self {
+		self.name_width = width.max(COL_NAME_SIZE_MIN); // <-- Minimum 15
+		self
+	}
 
-    pub fn path_width(mut self, width: usize) -> Self {
-        self.path_width = width.max(25); // <-- Minimum 25
-        self
-    }
+	pub fn path_width(mut self, width: usize) -> Self {
+		self.path_width = width.max(COL_PATH_SIZE_MIN); // <-- Minimum 25
+		self
+	}
 
-    pub fn column_order_left(mut self, cols: impl IntoIterator<Item = Column>) -> Self {
-        self.left_columns = cols.into_iter().collect();
-        self
-    }
+	pub fn column_order_left(mut self, cols: impl IntoIterator<Item = Column>) -> Self {
+		self.left_columns = cols.into_iter().collect();
+		self
+	}
 
-    pub fn column_order_right(mut self, cols: impl IntoIterator<Item = Column>) -> Self {
-        self.right_columns = cols.into_iter().collect();
-        self
-    }
+	pub fn column_order_right(mut self, cols: impl IntoIterator<Item = Column>) -> Self {
+		self.right_columns = cols.into_iter().collect();
+		self
+	}
 
-    pub fn numeration(mut self, numeration: Numeration) -> Self {
-        self.numeration = numeration;
-        self
-    }
+	pub fn numeration(mut self, numeration: Numeration) -> Self {
+		self.numeration = numeration;
+		self
+	}
 
-    pub fn stats_weight(mut self, weight: StatsWeight) -> Self {
-        self.stats_weight = weight;
-        self
-    }
+	pub fn stats_weight(mut self, weight: StatsWeight) -> Self {
+		self.stats_weight = weight;
+		self
+	}
 
-    pub fn stats_temporal(mut self, temporal: StatsTemporal) -> Self {
-        self.stats_temporal = temporal;
-        self
-    }
+	pub fn stats_temporal(mut self, temporal: StatsTemporal) -> Self {
+		self.stats_temporal = temporal;
+		self
+	}
 
-    pub fn sorting(mut self, sorting: Sorting) -> Self {
-        self.sorting = sorting;
-        self
-    }
+	pub fn sorting(mut self, sorting: Sorting) -> Self {
+		self.sorting = sorting;
+		self
+	}
 
-    pub fn format(&self, res: &QueryResults) -> String {
-        let mut root_node = InternalNode::build_root(res);
+	pub fn format(&self, res: &QueryResults) -> String {
+		let mut root_node = InternalNode::build_root(res);
 
-        if let TreeItem::Root { ref mut children, .. } = root_node {
-            self.sorting.sort_items(children);
-        }
+		if let TreeItem::Root { ref mut children, .. } = root_node {
+			self.sorting.sort_items(children);
+		}
 
-        let tree = Tree::new().name_width(self.name_width);
-        let max_prefix_len = tree.calculate_max_prefix_len_for_item(&root_node);
+		let tree = Tree::new().name_width(self.name_width);
+		let max_prefix_len = tree.calculate_max_prefix_len_for_item(&root_node);
 
-        let renderer = FmtRender {
-            name_width: self.name_width,
-            path_width: self.path_width,
-            left_columns: &self.left_columns,
-            right_columns: &self.right_columns,
-            numeration: &self.numeration,
-            stats_weight: &self.stats_weight,
-            stats_temporal: &self.stats_temporal,
-        };
+		let renderer = FmtRender {
+			name_width: self.name_width,
+			path_width: self.path_width,
+			left_columns: &self.left_columns,
+			right_columns: &self.right_columns,
+			numeration: &self.numeration,
+			stats_weight: &self.stats_weight,
+			stats_temporal: &self.stats_temporal,
+		};
 
-        renderer.render(&root_node, max_prefix_len)
-    }
+		renderer.render(&root_node, max_prefix_len)
+	}
 }
