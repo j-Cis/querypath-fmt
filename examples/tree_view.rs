@@ -3,7 +3,7 @@ use querypath::QueryPath;
 use querypath_fmt::PathsTree;
 
 fn main() -> Result<()> {
-    let res = QueryPath::new()
+    let res: querypath::QueryResults = QueryPath::new()
         .scan_at(["./"])
         .match_pattern(["!**/{.git|target}/?**"])
         .keep_parent(true)

@@ -1,11 +1,17 @@
-/// Pełny system 15 symboli określających strukturę i wcięcia
-pub const TREE_SYMBOLS: [&str; 15] = [
+/// Pełny system 17 symboli określających strukturę i wcięcia
+pub const TREE_SYMBOLS: [&str; 17] = [
     "└───", "└──┬", "└──•", "   ", "├───", "├──┬", "├──•", "│  ",
-    "  ├───", "  └───", "    •", "  ├──•", "  ┌──•", "  └──•", "   ──•"
+    "  ├───", "  └───", "    •", "  ├──•", "  ┌──•", "  └──•", "   ──•",
+    "▣─┬", "▣───"
 ];
 
 #[derive(Debug, Clone)]
 pub enum TreeItem {
+    Root {
+        label: String,
+        path: String,
+        children: Vec<TreeItem>,
+    },
     Node {
         label: String,
         is_dir: bool,
@@ -63,6 +69,36 @@ impl Tree {
                 out.push_str(prefix);
                 out.push('\n');
             }
+            TreeItem::Root { label, path, children } => {
+                let has_children = !children.is_empty();
+                let symbol = if has_children { TREE_SYMBOLS[15] } else { TREE_SYMBOLS[16] };
+                
+                // Dla zachowania pionowej kreski under `┬` przy przełamywaniu linii
+                let cont_symbol = if has_children { "  │" } else { TREE_SYMBOLS[3] };
+
+                let (name_chunks, path_chunks) = self.split_chunks(label, path);
+                let max_lines = name_chunks.len().max(path_chunks.len());
+
+                for i in 0..max_lines {
+                    let pfx = if i == 0 { symbol } else { cont_symbol };
+                    let nm = name_chunks.get(i).map(|s| s.as_str()).unwrap_or("");
+                    let pth = path_chunks.get(i).map(|s| s.as_str()).unwrap_or("");
+
+                    let left_str = format!("{} {}", pfx, nm);
+                    let left_len = left_str.chars().count();
+
+                    let padding_len = self.column_width.saturating_sub(left_len);
+                    let padding = " ".repeat(padding_len);
+
+                    out.push_str(&format!("{}{}{}\n", left_str, padding, pth));
+                }
+
+                let child_total = children.len();
+                for (i, child) in children.iter().enumerate() {
+                    let child_is_last = i == child_total - 1;
+                    self.render_item(child, "  ", child_is_last, out);
+                }
+            }
             TreeItem::Node { label, is_dir, path, children } => {
                 let has_children = !children.is_empty();
 
@@ -77,9 +113,10 @@ impl Tree {
 
                 let line_prefix = format!("{}{}", prefix, symbol);
 
+                // Przekształca `│` oraz `┬` na pionowe łączniki `│` na liniach kontynuacji
                 let cont_prefix: String = line_prefix
                     .chars()
-                    .map(|c| if c == '│' { '│' } else { ' ' })
+                    .map(|c| if c == '│' || c == '┬' { '│' } else { ' ' })
                     .collect();
 
                 let (name_chunks, path_chunks) = self.split_chunks(label, path);

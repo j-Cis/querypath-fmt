@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::path::Path;
 use querypath::QueryResults;
 use crate::tree::{Tree, TreeItem};
 
@@ -39,11 +40,13 @@ impl PathsTree {
         }
     }
 
+    /// Szerokość lewej kolumny drzewa.
     pub fn column_width(mut self, width: usize) -> Self {
         self.column_width = width;
         self
     }
 
+    /// Maksymalna długość nazwy w linii.
     pub fn max_name_len(mut self, max_len: usize) -> Self {
         self.max_name_len = Some(max_len);
         self
@@ -73,15 +76,36 @@ impl PathsTree {
             self.insert_path(&mut root, &file.path, false);
         }
 
+        let root_name = Path::new(&res.execution_dir)
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or(".")
+            .to_string();
+
+        // Używamy ścieżki absolutnej pobranej z res.execution_dir
+        let mut root_path = res.execution_dir.replace('\\', "/");
+        if !root_path.ends_with('/') {
+            root_path.push('/');
+        }
+
+        let children_items: Vec<TreeItem> = root
+            .children
+            .into_iter()
+            .map(|(child_name, child_node)| child_node.to_tree_item(child_name))
+            .collect();
+
+        let root_node = TreeItem::Root {
+            label: root_name,
+            path: root_path,
+            children: children_items,
+        };
+
         let mut tree = Tree::new().column_width(self.column_width);
         if let Some(limit) = self.max_name_len {
             tree = tree.max_name_len(limit);
         }
 
-        for (name, node) in &root.children {
-            tree.add_item(node.to_tree_item(name.clone()));
-        }
-
+        tree.add_item(root_node);
         tree.render()
     }
 
