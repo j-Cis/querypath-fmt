@@ -32,13 +32,13 @@ impl StatsTemporal {
 
     /// Formatuje opcjonalny znacznik czasu UNIX (w sekundach) i zamyka w nawiasach []
     pub fn format_timestamp(&self, timestamp: Option<u64>) -> String {
-        if !self.enabled {
+        if self.enabled == false {
             return String::new();
         }
 
         let ts = match timestamp {
             Some(t) => t,
-            None => return String::new(),
+            std::option::Option::None => return String::new(),
         };
 
         let formatted = Temporal::format(ts, &self.format_pattern);

@@ -79,8 +79,8 @@ impl StatsWeight {
     /// Formatuje pojedynczą wartość w bajtach na czytelny ciąg znaków.
     pub fn format_bytes(&self, bytes: u64) -> String {
         let (base, units): (f64, &[&str]) = match self.unit_system {
-            UnitSystem::Binary => (1024.0, &["B", "KiB", "MiB", "GiB", "TiB"]),
-            UnitSystem::Decimal => (1000.0, &["B", "KB", "MB", "GB", "TB"]),
+            UnitSystem::Binary => (1024.0_f64, ["B", "KiB", "MiB", "GiB", "TiB"].as_slice()),
+            UnitSystem::Decimal => (1000.0_f64, ["B", "KB", "MB", "GB", "TB"].as_slice()),
         };
 
         if bytes == 0 {
@@ -104,10 +104,10 @@ impl StatsWeight {
 
     /// Surowy tekst rozmiaru pliku.
     pub fn format_file_size_raw(&self, size: u64, is_binary: bool) -> String {
-        if !self.enabled || !self.include_files {
+        if self.enabled == false || self.include_files == false {
             return String::new();
         }
-        if is_binary && !self.include_binaries_in_matched {
+        if is_binary && self.include_binaries_in_matched == false {
             return String::new();
         }
         self.format_bytes(size)
@@ -115,7 +115,7 @@ impl StatsWeight {
 
     /// Surowy tekst rozmiaru katalogu.
     pub fn format_dir_size_raw(&self, matched_size: u64, real_size: u64) -> String {
-        if !self.enabled {
+        if self.enabled == false {
             return String::new();
         }
 

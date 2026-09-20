@@ -57,3 +57,15 @@ appveyor = { repository = "j-Cis/querypath-fmt" }
 anyhow = "1.0.104"
 querypath = "1.0.0"
 temporal-fmt = "0.1.0"
+
+# =========================
+# 🛑 GLOBAL LINTS
+# =========================
+
+[lints.rust]
+# Miejsce na globalne reguły kompilatora Rusta (np. unsafe_code = "forbid")
+
+[lints.clippy]
+# Wyciszamy ostrzeżenia o jawnym porównywaniu booli (np. `enabled == false`), 
+# aby zadowolić kaprysy niektórych wersji rust-analyzera
+bool_comparison = "allow"

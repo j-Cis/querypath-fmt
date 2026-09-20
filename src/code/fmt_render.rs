@@ -154,7 +154,7 @@ impl<'a> FmtRender<'a> {
                 }
             }
             Column::Path => {
-                let eff_path_width = self.path_width.max(25); // <-- Minimum 25
+                let eff_path_width = self.path_width.max(30);
                 format!("{:width$} ", path_chunk, width = eff_path_width)
             }
         }
@@ -190,7 +190,12 @@ impl<'a> FmtRender<'a> {
             }
             TreeItem::Root { label, path, matched_size, real_size, modified_at, children } => {
                 let has_children = !children.is_empty();
-                let symbol = if has_children { TREE_SYMBOLS[15] } else { TREE_SYMBOLS[16] };
+                
+                let symbol = if has_children {
+                    TREE_SYMBOLS.get(15).copied().unwrap_or("")
+                } else {
+                    TREE_SYMBOLS.get(16).copied().unwrap_or("")
+                };
 
                 let line_prefix = format!("{}{}", prefix, symbol);
                 let cont_prefix: String = line_prefix
@@ -250,12 +255,12 @@ impl<'a> FmtRender<'a> {
                 let has_children = !children.is_empty();
 
                 let symbol = match (*is_dir, has_children, is_last) {
-                    (true, true, true) => TREE_SYMBOLS[1],   // "└──┬"
-                    (true, true, false) => TREE_SYMBOLS[5],  // "├──┬"
-                    (true, false, true) => TREE_SYMBOLS[0],  // "└───"
-                    (true, false, false) => TREE_SYMBOLS[4], // "├───"
-                    (false, _, true) => TREE_SYMBOLS[2],     // "└──•"
-                    (false, _, false) => TREE_SYMBOLS[6],    // "├──•"
+                    (true, true, true) => TREE_SYMBOLS.get(1).copied().unwrap_or(""),
+                    (true, true, false) => TREE_SYMBOLS.get(5).copied().unwrap_or(""),
+                    (true, false, true) => TREE_SYMBOLS.first().copied().unwrap_or(""),
+                    (true, false, false) => TREE_SYMBOLS.get(4).copied().unwrap_or(""),
+                    (false, _, true) => TREE_SYMBOLS.get(2).copied().unwrap_or(""),
+                    (false, _, false) => TREE_SYMBOLS.get(6).copied().unwrap_or(""),
                 };
 
                 let line_prefix = format!("{}{}", prefix, symbol);
@@ -309,9 +314,9 @@ impl<'a> FmtRender<'a> {
                 }
 
                 let child_prefix = if is_last {
-                    format!("{}{}", prefix, TREE_SYMBOLS[3])
+                    format!("{}{}", prefix, TREE_SYMBOLS.get(3).copied().unwrap_or(""))
                 } else {
-                    format!("{}{}", prefix, TREE_SYMBOLS[7])
+                    format!("{}{}", prefix, TREE_SYMBOLS.get(7).copied().unwrap_or(""))
                 };
 
                 let child_total = children.len();

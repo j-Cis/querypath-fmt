@@ -43,20 +43,20 @@ impl Numeration {
     }
 
     pub fn should_numerate(&self, is_dir: bool, is_binary: bool) -> bool {
-        if !self.enabled {
+        if self.enabled == false {
             return false;
         }
-        if is_dir && !self.numerate_dirs {
+        if is_dir && self.numerate_dirs == false {
             return false;
         }
-        if !is_dir && is_binary && !self.numerate_binaries {
+        if is_dir == false && is_binary && self.numerate_binaries == false {
             return false;
         }
         true
     }
 
     pub fn column_width(&self, max_num: usize) -> usize {
-        if !self.enabled || max_num == 0 {
+        if self.enabled == false || max_num == 0 {
             0
         } else {
             max_num.to_string().len()
@@ -64,7 +64,7 @@ impl Numeration {
     }
 
     pub fn format_cell(&self, current_num: usize, max_num: usize) -> String {
-        if !self.enabled || max_num == 0 {
+        if self.enabled == false || max_num == 0 {
             return String::new();
         }
         let width = max_num.to_string().len();
@@ -72,7 +72,7 @@ impl Numeration {
     }
 
     pub fn empty_cell(&self, max_num: usize) -> String {
-        if !self.enabled || max_num == 0 {
+        if self.enabled == false || max_num == 0 {
             return String::new();
         }
         let width = max_num.to_string().len();

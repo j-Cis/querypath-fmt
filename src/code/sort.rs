@@ -120,7 +120,7 @@ impl Sorting {
     }
 
     pub fn sort_items(&self, items: &mut [TreeItem]) {
-        if !self.enabled || items.is_empty() {
+        if self.enabled == false || items.is_empty() {
             return;
         }
 
@@ -158,14 +158,14 @@ impl Sorting {
         let label_a = a.label();
         let label_b = b.label();
 
-        let clean_a = if self.ignore_leading_dot && label_a.starts_with('.') {
-            &label_a[1..]
+        let clean_a = if self.ignore_leading_dot {
+            label_a.strip_prefix('.').unwrap_or(label_a)
         } else {
             label_a
         };
 
-        let clean_b = if self.ignore_leading_dot && label_b.starts_with('.') {
-            &label_b[1..]
+        let clean_b = if self.ignore_leading_dot {
+            label_b.strip_prefix('.').unwrap_or(label_b)
         } else {
             label_b
         };
@@ -194,12 +194,12 @@ impl Sorting {
             }
 
             match (ext_a, ext_b) {
-                (None, None) => Ordering::Equal,
-                (None, Some(_)) => match self.no_ext_priority {
+                (std::option::Option::None, std::option::Option::None) => Ordering::Equal,
+                (std::option::Option::None, Some(_)) => match self.no_ext_priority {
                     NoExtPriority::Above => Ordering::Less,
                     NoExtPriority::Below => Ordering::Greater,
                 },
-                (Some(_), None) => match self.no_ext_priority {
+                (Some(_), std::option::Option::None) => match self.no_ext_priority {
                     NoExtPriority::Above => Ordering::Greater,
                     NoExtPriority::Below => Ordering::Less,
                 },
@@ -284,9 +284,9 @@ impl Sorting {
         }
 
         if let Some(pos) = name.rfind('.').filter(|&pos| pos > 0) {
-            let base = name[..pos].to_string();
-            let ext = name[pos + 1..].to_string();
-            return (base, Some(ext));
+            let (base, ext_with_dot) = name.split_at(pos);
+            let ext = ext_with_dot.strip_prefix('.').unwrap_or(ext_with_dot).to_string();
+            return (base.to_string(), Some(ext));
         }
 
         (name.to_string(), None)
