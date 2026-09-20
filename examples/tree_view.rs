@@ -3,7 +3,6 @@ use querypath::QueryPath;
 use querypath_fmt::PathsTree;
 
 fn main() -> Result<()> {
-    // Odpytujemy własny silnik katalogów
     let res = QueryPath::new()
         .scan_at(["./"])
         .match_pattern(["!**/{.git|target}/?**"])
@@ -30,9 +29,12 @@ fn main() -> Result<()> {
     }
 
     println!("\n// a następnie użyjemy naszego querypath_fmt do:");
-    
-    // Przekazujemy QueryResults do wizualizatora
-    let tree = PathsTree::new().format_results(&res);
+
+    let tree = PathsTree::new()
+        .column_width(45)
+        .max_name_len(24)
+        .format_results(&res);
+
     print!("{}", tree);
 
     Ok(())
