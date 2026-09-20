@@ -1,6 +1,6 @@
 use anyhow::Result;
 use querypath::QueryPath;
-use querypath_fmt::{Numeration, QueryPathFmt};
+use querypath_fmt::{Column, DirWeightDisplay, Numeration, QueryPathFmt, StatsTemporal, StatsWeight, UnitSystem, WeightPrecision};
 
 fn main() -> Result<()> {
     let res: querypath::QueryResults = QueryPath::new()
@@ -32,13 +32,32 @@ fn main() -> Result<()> {
 
     let fmt = QueryPathFmt::new()
         .name_width(25)
-        .path_width(45)
+        .path_width(35)
+		.column_order_left([
+		])
+		.column_order_right([
+			Column::Weight,  
+			Column::Temporal,
+			Column::Path,
+		])
         .numeration(
             Numeration::new()
                 .enabled(true)
                 .numerate_dirs(false)
                 .numerate_binaries(false)
                 .start_from(1),
+        )
+		.stats_weight(
+            StatsWeight::new()
+                .enabled(true)
+                .unit_system(UnitSystem::Binary)
+                .dir_display(DirWeightDisplay::MatchedOnly)
+                .precision(WeightPrecision::Tenths),
+        )
+        .stats_temporal(
+            StatsTemporal::new()
+                .enabled(true)
+                .pattern("YYYY-MM-MD AAA Q"),
         );
 
     let output = fmt.format(&res);
