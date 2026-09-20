@@ -35,8 +35,8 @@ impl Default for QueryPathFmt {
 impl QueryPathFmt {
     pub fn new() -> Self {
         Self {
-            name_width: 20,
-            path_width: 40,
+			name_width: 25, // <-- Domyślnie 25
+            path_width: 35, // <-- Domyślnie 35
             left_columns: vec![Column::Weight, Column::Temporal],
             right_columns: vec![Column::Path],
             numeration: Numeration::default(),
@@ -47,12 +47,12 @@ impl QueryPathFmt {
     }
 
     pub fn name_width(mut self, width: usize) -> Self {
-        self.name_width = width.max(20);
+        self.name_width = width.max(15); // <-- Minimum 15
         self
     }
 
     pub fn path_width(mut self, width: usize) -> Self {
-        self.path_width = width.max(30);
+        self.path_width = width.max(25); // <-- Minimum 25
         self
     }
 

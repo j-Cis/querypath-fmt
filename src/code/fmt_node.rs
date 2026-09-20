@@ -36,6 +36,7 @@ impl InternalNode {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn insert_path(
         root: &mut InternalNode,
         path: &str,

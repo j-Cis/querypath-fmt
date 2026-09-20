@@ -40,11 +40,11 @@ pub struct Tree {
 
 impl Tree {
     pub fn new() -> Self {
-        Self { name_width: 20 }
+        Self { name_width: 25 } // <-- Domyślnie 25
     }
 
     pub fn name_width(mut self, width: usize) -> Self {
-        self.name_width = width.max(20);
+        self.name_width = width.max(15); // <-- Minimum 15
         self
     }
 

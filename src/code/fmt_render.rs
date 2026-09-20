@@ -127,6 +127,7 @@ impl<'a> FmtRender<'a> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn render_column_cell(
         &self,
         col: Column,
@@ -153,12 +154,13 @@ impl<'a> FmtRender<'a> {
                 }
             }
             Column::Path => {
-                let eff_path_width = self.path_width.max(40);
+                let eff_path_width = self.path_width.max(25); // <-- Minimum 25
                 format!("{:width$} ", path_chunk, width = eff_path_width)
             }
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn render_item_combined(
         &self,
         item: &TreeItem,
