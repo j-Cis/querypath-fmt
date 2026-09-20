@@ -1,6 +1,6 @@
 [package]
 name = "querypath-fmt"
-version = "1.0.0-dev.2"
+version = "1.0.0-rc.1"
 authors = ["Jan Roman Cisowski <code@cisowscy.com>"]
 description = "Sorting, formatting, and rendering engine for querypath results."
 repository = "https://github.com/j-Cis/querypath-fmt"

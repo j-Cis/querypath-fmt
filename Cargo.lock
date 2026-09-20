@@ -36,7 +36,7 @@ dependencies = [
 
 [[package]]
 name = "querypath-fmt"
-version = "1.0.0-dev.2"
+version = "1.0.0-rc.1"
 dependencies = [
  "anyhow",
  "querypath",
