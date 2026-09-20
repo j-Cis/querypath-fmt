@@ -38,6 +38,7 @@ dependencies = [
 name = "querypath-fmt"
 version = "1.0.0-dev.1"
 dependencies = [
+ "anyhow",
  "querypath",
 ]
 

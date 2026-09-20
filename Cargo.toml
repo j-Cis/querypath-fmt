@@ -54,4 +54,5 @@ travis-ci = { repository = "j-Cis/querypath-fmt" }
 appveyor = { repository = "j-Cis/querypath-fmt" }
 
 [dependencies]
+anyhow = "1.0.104"
 querypath = "1.0.0"
