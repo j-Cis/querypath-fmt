@@ -1,0 +1,57 @@
+[package]
+name = "querypath-fmt"
+version = "1.0.0-dev.1"
+authors = ["Jan Roman Cisowski <code@cisowscy.com>"]
+description = "Sorting, formatting, and rendering engine for querypath results."
+repository = "https://github.com/j-Cis/querypath-fmt"
+readme = "README.md"
+keywords = [
+    "format",
+    "formatter",
+    "sort",
+    "display",
+]
+categories = [
+    "text-processing",
+    "filesystem",
+    "rust-patterns",
+]
+license = "Unlicense OR MIT"
+edition = "2024"
+rust-version = "1.96.0"
+resolver = "3"
+
+include = [
+    "src/**/*",
+    "examples/**/*",
+    "Cargo.toml",
+    "README.md",
+    "LICENSE*",
+]
+
+[package.metadata.cargo]
+edition = "2024"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+targets = [
+    "x86_64-pc-windows-msvc",
+    "i686-pc-windows-msvc",
+    "x86_64-unknown-linux-gnu",
+    "x86_64-unknown-linux-musl",
+    "i686-unknown-linux-gnu",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin"
+]
+
+[lib]
+name = "querypath_fmt"
+path = "src/lib.rs"
+
+[badges]
+travis-ci = { repository = "j-Cis/querypath-fmt" }
+appveyor = { repository = "j-Cis/querypath-fmt" }
+
+[dependencies]
+querypath = "1.0.0"
